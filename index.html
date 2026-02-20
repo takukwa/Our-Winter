@@ -576,17 +576,15 @@
   }
 
   #galleryContent {
-    margin-top: 15px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+    margin-top: 20px;
+    text-align: center;
   }
 
   #galleryContent img {
-    width: calc(33.333% - 7px);
-    height: 100px;
-    object-fit: cover;
-    border-radius: 10px;
+    max-width: 90%;
+    height: auto;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
   }
 
   /* 🖼 갤러리 닫기 X 버튼 */
@@ -675,7 +673,11 @@
       <h3 id="galleryTitle">Gallery</h3>
       <button class="gallery-close-btn" onclick="closeGallery()">⨉</button>
     </div>
-    <div id="galleryContent"></div>
+    <div id="galleryContent">
+      <button id="prevBtn">◀</button>
+      <img id="galleryImage" src="" />
+      <button id="nextBtn">▶</button>
+    </div>
   </div>
 
   <!-- 💬 채팅 카드 -->
@@ -1019,44 +1021,65 @@
   });
 
 
-// 날짜 클릭했을 때 실행
-function openGallery(dateString) {
-  const galleryCard = document.getElementById("galleryCard");
-  const galleryContent = document.getElementById("galleryContent");
-  const title = document.getElementById("galleryTitle");
+  // 날짜 클릭했을 때 실행
+  let images = [];
+  let currentIndex = 0;
 
-  galleryContent.innerHTML = "";
+  function openGallery(dateString) {
+    const galleryCard = document.getElementById("galleryCard");
+    const title = document.getElementById("galleryTitle");
+    const galleryImage = document.getElementById("galleryImage");
 
-  const [year, month, day] = dateString.split("-");
-  title.textContent = `${year}년 ${Number(month)}월 ${Number(day)}일`;
+    images = [];
+    currentIndex = 0;
 
-  let found = false;
+    const [year, month, day] = dateString.split("-");
+    title.textContent = `${year}년 ${Number(month)}월 ${Number(day)}일`;
 
-  // 최대 10장까지 자동 탐색
-  for (let i = 1; i <= 10; i++) {
-    const img = new Image();
-    img.src = `images/${dateString}_${i}.jpg`;
+    let loadedCount = 0;
+  
+    for (let i = 1; i <= 10; i++) {
+      const img = new Image();
+      img.src = `images/${dateString}_${i}.jpg`;
 
-    img.onload = function () {
-      galleryContent.appendChild(img);
-      found = true;
-    };
+      img.onload = function () {
+        images.push(img.src);
+        loadedCount++;
+
+        // 첫 번째 이미지면 바로 보여주기
+        if (images.length === 1) {
+          galleryImage.src = images[0];
+        }
+      };
+    }
+
+    setTimeout(() => {
+      if (images.length === 0) {
+        galleryImage.src = "";
+        galleryImage.alt = "이 날의 추억은 아직 없어요 🤍";
+      }
+    }, 300);
+
+    galleryCard.classList.remove("hidden");
   }
 
-  // 0.3초 후 아무것도 없으면 안내 문구
-  setTimeout(() => {
-    if (!found) {
-      galleryContent.innerHTML = "<p>이 날의 추억은 아직 없어요 🤍</p>";
-    }
-  }, 300);
+  // 버튼 이벤트
+  document.getElementById("prevBtn").onclick = function () {
+    if (images.length === 0) return;
+    currentIndex = (currentIndex - 1 + images.length) % images.length;
+    document.getElementById("galleryImage").src = images[currentIndex];
+  };
 
-  galleryCard.classList.remove("hidden");
-}
+  document.getElementById("nextBtn").onclick = function () {
+    if (images.length === 0) return;
+    currentIndex = (currentIndex + 1) % images.length;
+    document.getElementById("galleryImage").src = images[currentIndex];
+  };
 
-// 닫기 버튼
-function closeGallery() {
-  document.getElementById("galleryCard").classList.add("hidden");
-}
+  // 닫기 버튼
+  function closeGallery() {
+    document.getElementById("galleryCard").classList.add("hidden");
+  }
 
   
 </script>
