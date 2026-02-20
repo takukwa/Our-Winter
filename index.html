@@ -819,7 +819,7 @@ body:not(.entered) {
 
     document.getElementById("monthTitle").innerText = `${y}년 ${m + 1}월`;
 
-    let html = "";   // ⭐ 핵심
+    let html = "";
 
     // 요일
     "일월화수목금토".split("").forEach(d => {
@@ -880,16 +880,15 @@ body:not(.entered) {
       `;
     }
 
-    // ⭐ 마지막에 한 번만 렌더링
     cal.innerHTML = html;
 
-    // ⭐ 캘린더 그린 다음 사진 있는 날짜에 점 추가
+    // 사진 있는 날짜에 점 찍기
     setTimeout(() => {
       const dayElements = document.querySelectorAll(".day");
 
       dayElements.forEach(dayEl => {
-        const dateString = dayEl.getAttribute("onclick")
-          ?.match(/'([^']+)'/)?.[1];
+        const match = dayEl.getAttribute("onclick")?.match(/'([^']+)'/);
+        const dateString = match && match[1];
 
         if (!dateString) return;
 
@@ -912,8 +911,8 @@ body:not(.entered) {
 
   let w, h;
   let snowflakes = [];
-  let snowCount = 60;      // 기본 눈 개수
-  let snowSpeed = 0.4;      // 기본 속도
+  let snowCount = 60;
+  let snowSpeed = 0.4;
 
   function resizeSnow() {
     w = canvas.width = window.innerWidth;
@@ -928,10 +927,10 @@ body:not(.entered) {
       snowflakes.push({
         x: Math.random() * w,
         y: Math.random() * h,
-        r: Math.random() * 4 + 1,              // 크기 다양화
-        speed: Math.random() * 1.5 + 0.3,     // ⭐ 각자 다른 속도
-        drift: Math.random() * 2 - 1,         // 좌우 바람
-        opacity: Math.random() * 0.5 + 0.4    // 투명도 다양화
+        r: Math.random() * 4 + 1,
+        speed: Math.random() * 1.5 + 0.3,
+        drift: Math.random() * 2 - 1,
+        opacity: Math.random() * 0.5 + 0.4
       });
     }
   }
@@ -953,22 +952,16 @@ body:not(.entered) {
 
   function moveSnow() {
     snowflakes.forEach(f => {
-
-      // 기본 낙하
       f.y += f.speed * snowSpeed;
-
-      // 바람 + 불규칙 흔들림
       f.x += Math.sin(f.y * 0.01) * f.drift + (Math.random() - 0.5) * 0.5;
 
-      // 화면 벗어나면 재생성
       if (f.y > h) {
         f.y = -10;
         f.x = Math.random() * w;
-        f.speed = Math.random() * 1.5 + 0.3;   // 다시 랜덤 속도
+        f.speed = Math.random() * 1.5 + 0.3;
       }
     });
   }
-
 
   function animateSnow() {
     drawSnow();
@@ -1002,8 +995,7 @@ body:not(.entered) {
         <h3>한서올</h3>
         <p>세계의 종말, 네 앞에서<br>#네가부디_나를</p>
       `;
-    }
-    else {
+    } else {
       content.innerHTML = `
         <div class="profile-img"></div>
         <h3>하현우</h3>
@@ -1017,82 +1009,30 @@ body:not(.entered) {
   function closeProfile() {
     document.getElementById("profileModal").classList.add("hidden");
   }
- 
-  const messagesDiv = document.getElementById("messages");
 
-db.ref("messages").limitToLast(200).on(
-  "value",
-  (snapshot) => {
-    messagesDiv.innerHTML = "";
+  /* ===== Firebase 설정 (⭐ 실제 값으로 채우기) ===== */
+  const firebaseConfig = {
+    apiKey: "여기에_본인_프로젝트_apiKey",
+    authDomain: "our-winter-chat.firebaseapp.com",
+    databaseURL: "https://our-winter-chat-default-rtdb.firebaseio.com",
+    projectId: "our-winter-chat",
+  };
 
-    const list = [];
-    snapshot.forEach((child) => {
-      list.push({
-        key: child.key,
-        ...child.val()
-      });
-    });
-
-    for (let i = 0; i < list.length; i++) {
-      const msgData = list[i];
-      const prev    = list[i - 1];
-      const next    = list[i + 1];
-
-      const user = msgData.user;
-      const text = msgData.text;
-      const time = msgData.time;
-      const read = msgData.read;
-
-      const currTimeText = formatTime(time);
-      const nextTimeText = next ? formatTime(next.time) : null;
-
-      const showName = !prev || prev.user !== user;
-
-      const isLastOfGroup =
-        !next ||
-        next.user !== user ||
-        nextTimeText !== currTimeText;
-
-      const nameHTML = showName ? `<div class="name">${user}</div>` : "";
-      const timeHTML = isLastOfGroup ? `<div class="time">${currTimeText}</div>` : "";
-
-      const side = user === "서올" ? "left" : "right";
-      const msgEl = document.createElement("div");
-      msgEl.className = `message ${side}`;
-
-      msgEl.innerHTML = `
-        ${nameHTML}
-        <div class="bubble">${text}</div>
-        ${timeHTML}
-      `;
-
-      const bubble = msgEl.querySelector(".bubble");
-      bubble.onclick = () => {
-        const ok = confirm("이 메시지를 삭제할까?");
-        if (ok) {
-          db.ref("messages/" + msgData.key).remove();
-        }
-      };
-
-      messagesDiv.appendChild(msgEl);
-
-      if (!read) {
-        db.ref("messages/" + msgData.key + "/read").set(true);
-      }
-    }
-
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  },
-  (error) => {
-    // 🔥 여기서 에러 메시지를 화면에 직접 보여줌
-    messagesDiv.innerHTML = `<div style="padding:8px; font-size:13px; opacity:.7;">
-      채팅을 불러오지 못했어요 (${error.code})
-    </div>`;
-  }
-);
-  
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
+
+  /* ===== 시간 포맷 ===== */
+  function formatTime(ts) {
+    const date = new Date(ts);
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const hour = date.getHours().toString().padStart(2, "0");
+    const min = date.getMinutes().toString().padStart(2, "0");
+    return `${month}월 ${day}일 ${hour}:${min}`;
+  }
+
+  /* ===== 채팅 ===== */
+  const messagesDiv = document.getElementById("messages");
 
   function sendMessage() {
     const text = document.getElementById("messageInput").value.trim();
@@ -1111,95 +1051,79 @@ db.ref("messages").limitToLast(200).on(
     document.getElementById("messageInput").value = "";
   }
 
-  const messagesDiv = document.getElementById("messages");
+  // 카톡 스타일로 이름/시간 묶기
+  db.ref("messages").limitToLast(200).on(
+    "value",
+    (snapshot) => {
+      messagesDiv.innerHTML = "";
 
-db.ref("messages").limitToLast(200).on("value", (snapshot) => {
-  messagesDiv.innerHTML = "";
+      const list = [];
+      snapshot.forEach((child) => {
+        list.push({
+          key: child.key,
+          ...child.val()
+        });
+      });
 
-  // 1) 먼저 배열로 모으기
-  const list = [];
-  snapshot.forEach((child) => {
-    list.push({
-      key: child.key,
-      ...child.val()
-    });
-  });
+      for (let i = 0; i < list.length; i++) {
+        const msgData = list[i];
+        const prev    = list[i - 1];
+        const next    = list[i + 1];
 
-  // 2) 순서대로 그리면서 앞/뒤 메시지 비교
-  for (let i = 0; i < list.length; i++) {
-    const msgData = list[i];
-    const prev    = list[i - 1];
-    const next    = list[i + 1];
+        const user = msgData.user;
+        const text = msgData.text;
+        const time = msgData.time;
+        const read = msgData.read;
 
-    const user = msgData.user;
-    const text = msgData.text;
-    const time = msgData.time;
-    const read = msgData.read;
+        const currTimeText = formatTime(time);
+        const nextTimeText = next ? formatTime(next.time) : null;
 
-    const currTimeText = formatTime(time);
-    const prevTimeText = prev ? formatTime(prev.time) : null;
-    const nextTimeText = next ? formatTime(next.time) : null;
+        const showName = !prev || prev.user !== user;
 
-    // 🔹 이름은 "새 유저가 시작되는 첫 메시지"에만 표시
-    const showName = !prev || prev.user !== user;
+        const isLastOfGroup =
+          !next ||
+          next.user !== user ||
+          nextTimeText !== currTimeText;
 
-    // 🔹 시간은 "같은 유저 + 같은 시간 묶음의 마지막 메시지"에만 표시
-    const isLastOfGroup =
-      !next ||                 // 마지막 메시지이거나
-      next.user !== user ||    // 다음 메시지의 유저가 바뀌었거나
-      nextTimeText !== currTimeText; // 다음 메시지 시간이 다르면 (분이 달라지면)
+        const nameHTML = showName ? `<div class="name">${user}</div>` : "";
+        const timeHTML = isLastOfGroup ? `<div class="time">${currTimeText}</div>` : "";
 
-    const nameHTML = showName
-      ? `<div class="name">${user}</div>`
-      : "";
+        const side = user === "서올" ? "left" : "right";
+        const msgEl = document.createElement("div");
+        msgEl.className = `message ${side}`;
 
-    const timeHTML = isLastOfGroup
-      ? `<div class="time">${currTimeText}</div>`
-      : "";
+        msgEl.innerHTML = `
+          ${nameHTML}
+          <div class="bubble">${text}</div>
+          ${timeHTML}
+        `;
 
-    // 좌/우 정렬
-    const side = user === "서올" ? "left" : "right";
-    const msgEl = document.createElement("div");
-    msgEl.className = `message ${side}`;
+        const bubble = msgEl.querySelector(".bubble");
+        bubble.onclick = () => {
+          const ok = confirm("이 메시지를 삭제할까?");
+          if (ok) {
+            db.ref("messages/" + msgData.key).remove();
+          }
+        };
 
-    msgEl.innerHTML = `
-      ${nameHTML}
-      <div class="bubble">${text}</div>
-      ${timeHTML}
-    `;
+        messagesDiv.appendChild(msgEl);
 
-    // 말풍선 클릭 → 삭제
-    const bubble = msgEl.querySelector(".bubble");
-    bubble.onclick = () => {
-      const ok = confirm("이 메시지를 삭제할까?");
-      if (ok) {
-        db.ref("messages/" + msgData.key).remove();
+        if (!read) {
+          db.ref("messages/" + msgData.key + "/read").set(true);
+        }
       }
-    };
 
-    messagesDiv.appendChild(msgEl);
-
-    // 읽음 처리
-    if (!read) {
-      db.ref("messages/" + msgData.key + "/read").set(true);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    },
+    (error) => {
+      messagesDiv.innerHTML = `<div style="padding:8px; font-size:13px; opacity:.7;">
+        채팅을 불러오지 못했어요 (${error.code})
+      </div>`;
     }
-  }
-
-  // 스크롤 맨 아래로
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-});
-
-  function formatTime(ts) {
-    const date = new Date(ts);
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    const hour = date.getHours().toString().padStart(2, "0");
-    const min = date.getMinutes().toString().padStart(2, "0");
-    return `${month}월 ${day}일 ${hour}:${min}`;
-  }
+  );
 
 
-  // 날짜 클릭했을 때 실행
+  /* ===== 갤러리 ===== */
   let images = [];
   let currentIndex = 0;
 
@@ -1207,10 +1131,8 @@ db.ref("messages").limitToLast(200).on("value", (snapshot) => {
     const galleryCard = document.getElementById("galleryCard");
     const title = document.getElementById("galleryTitle");
     const galleryImage = document.getElementById("galleryImage");
-
     const noImageText = document.getElementById("noImageText");
 
-    // ⭐ 매번 초기화
     galleryImage.style.display = "block";
     galleryImage.src = "";
     noImageText.textContent = "";
@@ -1222,17 +1144,13 @@ db.ref("messages").limitToLast(200).on("value", (snapshot) => {
     const [year, month, day] = dateString.split("-");
     title.textContent = `${year}년 ${Number(month)}월 ${Number(day)}일`;
 
-    let loadedCount = 0;
-  
     for (let i = 1; i <= 10; i++) {
       const img = new Image();
       img.src = `images/${dateString}_${i}.jpg`;
 
       img.onload = function () {
         images.push(img.src);
-        loadedCount++;
 
-        // 첫 번째 이미지면 바로 보여주기
         if (images.length === 1) {
           galleryImage.src = images[0];
         }
@@ -1250,32 +1168,27 @@ db.ref("messages").limitToLast(200).on("value", (snapshot) => {
     galleryCard.classList.remove("hidden");
   }
 
-  // 닫기 버튼
   function closeGallery() {
     document.getElementById("galleryCard").classList.add("hidden");
   }
 
-  const galleryImage = document.getElementById("galleryImage");
+  const galleryImageEl = document.getElementById("galleryImage");
 
-  galleryImage.addEventListener("click", function (e) {
+  galleryImageEl.addEventListener("click", function (e) {
     if (images.length === 0) return;
 
-    const rect = galleryImage.getBoundingClientRect();
+    const rect = galleryImageEl.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const halfWidth = rect.width / 2;
 
     if (clickX < halfWidth) {
-      // 왼쪽 클릭 → 이전
       currentIndex = (currentIndex - 1 + images.length) % images.length;
     } else {
-      // 오른쪽 클릭 → 다음
       currentIndex = (currentIndex + 1) % images.length;
     }
 
-    galleryImage.src = images[currentIndex];
+    galleryImageEl.src = images[currentIndex];
   });
-
-  
 </script>
 </body>
 </html>
