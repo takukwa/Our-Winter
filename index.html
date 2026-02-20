@@ -9,6 +9,7 @@
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
 <style>
   body {
@@ -1011,47 +1012,35 @@ body:not(.entered) {
   }
 
   /* ===== Firebase 설정 (⭐ 실제 값으로 채우기) ===== */
-  const firebaseConfig = {
-    apiKey: "여기에_본인_프로젝트_apiKey",
-    authDomain: "our-winter-chat.firebaseapp.com",
-    databaseURL: "https://our-winter-chat-default-rtdb.firebaseio.com",
-    projectId: "our-winter-chat",
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyBIVL1QsrMGCTCIsJo0spbi4014Ml6xBjc",
+  authDomain: "our-winter-chat.firebaseapp.com",
+  databaseURL: "https://our-winter-chat-default-rtdb.firebaseio.com",
+  projectId: "our-winter-chat",
+  storageBucket: "our-winter-chat.firebasestorage.app",
+  messagingSenderId: "451592072007",
+  appId: "1:451592072007:web:fb54c27412287de77b3a62"
+};
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+firebase.initializeApp(firebaseConfig);
 
-  /* ===== 시간 포맷 ===== */
-  function formatTime(ts) {
-    const date = new Date(ts);
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    const hour = date.getHours().toString().padStart(2, "0");
-    const min = date.getMinutes().toString().padStart(2, "0");
-    return `${month}월 ${day}일 ${hour}:${min}`;
-  }
+// 🔐 auth / db / DOM
+const auth        = firebase.auth();
+const db          = firebase.database();
+const messagesDiv = document.getElementById("messages");
 
-  /* ===== 채팅 ===== */
-  const messagesDiv = document.getElementById("messages");
+/* ===== 시간 포맷 ===== */
+function formatTime(ts) {
+  const date  = new Date(ts);
+  const month = date.getMonth() + 1;
+  const day   = date.getDate();
+  const hour  = date.getHours().toString().padStart(2, "0");
+  const min   = date.getMinutes().toString().padStart(2, "0");
+  return `${month}월 ${day}일 ${hour}:${min}`;
+}
 
-  function sendMessage() {
-    const text = document.getElementById("messageInput").value.trim();
-    const user = document.getElementById("sender").value;
-    if (!text) return;
-
-    const now = Date.now();
-
-    db.ref("messages").push({
-      user: user,
-      text: text,
-      time: now,
-      read: false
-    });
-
-    document.getElementById("messageInput").value = "";
-  }
-
-  // 카톡 스타일로 이름/시간 묶기
+/* ===== 메시지 그리기 (카톡 스타일) ===== */
+function startChatListener() {
   db.ref("messages").limitToLast(200).on(
     "value",
     (snapshot) => {
@@ -1078,8 +1067,10 @@ body:not(.entered) {
         const currTimeText = formatTime(time);
         const nextTimeText = next ? formatTime(next.time) : null;
 
+        // 🔹 같은 사람이 새로 시작할 때만 이름
         const showName = !prev || prev.user !== user;
 
+        // 🔹 같은 시간(분 단위) + 같은 사람이 보낸 묶음 중 "마지막 말풍선"에만 시간
         const isLastOfGroup =
           !next ||
           next.user !== user ||
@@ -1098,6 +1089,7 @@ body:not(.entered) {
           ${timeHTML}
         `;
 
+        // 말풍선 클릭 → 삭제
         const bubble = msgEl.querySelector(".bubble");
         bubble.onclick = () => {
           const ok = confirm("이 메시지를 삭제할까?");
@@ -1108,11 +1100,13 @@ body:not(.entered) {
 
         messagesDiv.appendChild(msgEl);
 
+        // 읽음 표시 업데이트
         if (!read) {
           db.ref("messages/" + msgData.key + "/read").set(true);
         }
       }
 
+      // 스크롤 맨 아래
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     },
     (error) => {
@@ -1121,6 +1115,41 @@ body:not(.entered) {
       </div>`;
     }
   );
+}
+
+/* ===== 익명 로그인 (사용자는 아무것도 안 함) ===== */
+auth.signInAnonymously().catch((error) => {
+  console.log("익명 로그인 에러", error);
+  messagesDiv.innerHTML = `<div style="padding:8px; font-size:13px; opacity:.7;">
+    로그인 오류가 있어요 (${error.code})
+  </div>`;
+});
+
+// 로그인 상태가 되면 그때 채팅 시작
+auth.onAuthStateChanged((user) => {
+  if (user) {
+    console.log("익명 로그인 완료, uid:", user.uid);
+    startChatListener();
+  }
+});
+
+/* ===== 메시지 보내기 ===== */
+function sendMessage() {
+  const text = document.getElementById("messageInput").value.trim();
+  const user = document.getElementById("sender").value;
+  if (!text) return;
+
+  const now = Date.now();
+
+  db.ref("messages").push({
+    user: user,
+    text: text,
+    time: now,
+    read: false
+  });
+
+  document.getElementById("messageInput").value = "";
+}
 
 
   /* ===== 갤러리 ===== */
