@@ -730,7 +730,7 @@
       
       <input
         id="messageInput"
-        placeholder="메시지를 입력해줘…"
+        placeholder="메시지를 입력해주세요"
         onkeydown="if(event.key==='Enter') sendMessage()"
       />
       
@@ -1038,6 +1038,8 @@
   db.ref("messages").limitToLast(200).on("value", (snapshot) => {
     messagesDiv.innerHTML = "";
 
+    let prevTimeText = "";   // 🔥 이전 메시지 시간 저장
+
     snapshot.forEach((child) => {
       const key = child.key;
       const { user, text, time, read } = child.val();
@@ -1048,17 +1050,25 @@
       const hour = date.getHours().toString().padStart(2, "0");
       const min = date.getMinutes().toString().padStart(2, "0");
 
+      const timeText = `${month}월 ${day}일 ${hour}:${min}`;
+
       const msg = document.createElement("div");
       const side = user === "서올" ? "left" : "right";
       msg.className = `message ${side}`;
 
+      // 🔥 시간 다를 때만 표시
+      let timeHTML = "";
+      if (timeText !== prevTimeText) {
+        timeHTML = `<div class="time">${timeText}</div>`;
+        prevTimeText = timeText;
+      }
+
       msg.innerHTML = `
-      <div class="name">${user}</div>
-      <div class="bubble">${text}</div>
-      <div class="time">${month}월 ${day}일 ${hour}:${min}</div>
+        <div class="name">${user}</div>
+        <div class="bubble">${text}</div>
+        ${timeHTML}
       `;
 
-      /* 💡 말풍선 클릭 → 삭제 */
       msg.querySelector(".bubble").onclick = () => {
         const ok = confirm("이 메시지를 삭제할까?");
         if (ok) {
@@ -1072,6 +1082,7 @@
         db.ref("messages/" + key + "/read").set(true);
       }
     });
+
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   });
 
