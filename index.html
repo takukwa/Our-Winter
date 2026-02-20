@@ -766,7 +766,7 @@
     setTimeout(() => {
       text.textContent = "눈은 언제까지나 내릴까?";
       buttons.style.display = "flex";
-    }, 3000);
+    }, 300);
   }
   
   /* ===== D-Day ===== */
@@ -843,28 +843,39 @@
 
       const dateString = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
-      let hasPhoto = false;
-
-      // 1번 사진 존재 확인
-      const testImg = new Image();
-      testImg.src = `images/${dateString}_1.jpg`;
-      testImg.onload = function () {
-        hasPhoto = true;
-      };
-
       html += `
         <div class="day ${label ? "mark" : ""}"
           data-text="${label}"
           onclick="openGallery('${dateString}')">
           ${d}
           <span>${icon}</span>
-          ${hasPhoto ? '<div class="photo-dot"></div>' : ''}
         </div>
       `;
     }
 
     // ⭐ 마지막에 한 번만 렌더링
     cal.innerHTML = html;
+
+    // ⭐ 캘린더 그린 다음 사진 있는 날짜에 점 추가
+    setTimeout(() => {
+      const dayElements = document.querySelectorAll(".day");
+
+      dayElements.forEach(dayEl => {
+        const dateString = dayEl.getAttribute("onclick")
+          ?.match(/'([^']+)'/)?.[1];
+
+        if (!dateString) return;
+
+        const testImg = new Image();
+        testImg.src = `images/${dateString}_1.jpg`;
+
+        testImg.onload = function () {
+          const dot = document.createElement("div");
+          dot.className = "photo-dot";
+          dayEl.appendChild(dot);
+        };
+      });
+    }, 100);
   }
 
 
