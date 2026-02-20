@@ -636,6 +636,18 @@
     opacity: 0.6;
   }
 
+  .photo-dot {
+    width: 5px;
+    height: 5px;
+    background: #7a8cff;
+    border-radius: 50%;
+    margin: 3px auto 0;
+  }
+
+  body.night .photo-dot {
+    background: #cfd3ff;
+  }
+
  
 </style>
 </head>
@@ -831,12 +843,22 @@
 
       const dateString = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
+      let hasPhoto = false;
+
+      // 1번 사진 존재 확인
+      const testImg = new Image();
+      testImg.src = `images/${dateString}_1.jpg`;
+      testImg.onload = function () {
+        hasPhoto = true;
+      };
+
       html += `
         <div class="day ${label ? "mark" : ""}"
           data-text="${label}"
           onclick="openGallery('${dateString}')">
           ${d}
           <span>${icon}</span>
+          ${hasPhoto ? '<div class="photo-dot"></div>' : ''}
         </div>
       `;
     }
