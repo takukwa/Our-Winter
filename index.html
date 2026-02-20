@@ -370,12 +370,12 @@
 
   /* 메시지 리스트 */
   #messages {
-    flex: 1;              /* ⭐ 남은 공간 다 차지 */
+    flex: 1;
     overflow-y: auto;
-    padding: 6px 4px 10px;
+    padding: 4px 4px 6px;   /* 🔥 아래 여백 줄임 */
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 12px;              /* 메시지 간격도 살짝 줄임 */
   }
 
   /* 공통 메시지 블록 */
@@ -433,7 +433,7 @@
   .chat-input {
     display: flex;
     gap: 6px;
-    margin-top: 10px;
+    margin-top: 6px;        /* 🔥 10 → 6으로 줄임 */
   }
 
   .chat-input select,
