@@ -284,8 +284,12 @@
     width: 90px;
     height: 90px;
     border-radius: 50%;
-    background: #ddd;
+    background-size: cover;
+    background-position: center;
     margin: 0 auto 10px;
+  
+    /* ✨ 살짝 떠있는 느낌 */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   }
 
   .hidden {
@@ -992,13 +996,13 @@ body:not(.entered) {
     
     if (who === "a") {
       content.innerHTML = `
-        <div class="profile-img"></div>
+        <div class="profile-img" style="background-image:url('images/seool.jpg')"></div>
         <h3>한서올</h3>
         <p>세계의 종말, 네 앞에서<br>#네가부디_나를</p>
       `;
     } else {
       content.innerHTML = `
-        <div class="profile-img"></div>
+        <div class="profile-img" style="background-image:url('images/hyunwoo.jpg')"></div>
         <h3>하현우</h3>
         <p>세계의 종말, 그 앞에서<br>#내가감히_너를</p>
       `;
