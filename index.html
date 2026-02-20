@@ -585,7 +585,7 @@
     height: auto;
     border-radius: 15px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-    margin-bottom: 25px;
+    margin-bottom: 23px;
   }
 
   /* 🖼 갤러리 닫기 X 버튼 */
@@ -752,19 +752,19 @@
 
     // 3️⃣ 3초 후 원래 상태로 복구
     const noImageText = document.getElementById("noImageText");
-
-    setTimeout(() => {
-      if (images.length === 0) {
-        galleryImage.style.display = "none";
-        noImageText.textContent = "이 날의 추억은 아직 없어요 🤍";
-        noImageText.classList.remove("hidden");
-      } else {
-        galleryImage.style.display = "block";
-        noImageText.classList.add("hidden");
-      }
-    }, 300);
   }
 
+  setTimeout(() => {
+    if (images.length === 0) {
+      galleryImage.style.display = "none";
+      noImageText.textContent = "이 날의 추억은 아직 없어요 🤍";
+      noImageText.classList.remove("hidden");
+    } else {
+      galleryImage.style.display = "block";
+      noImageText.classList.add("hidden");
+    }
+  }, 300);
+  
   /* ===== D-Day ===== */
   function updateDday() {
     const today = new Date();
@@ -1044,6 +1044,14 @@
     const title = document.getElementById("galleryTitle");
     const galleryImage = document.getElementById("galleryImage");
 
+    const noImageText = document.getElementById("noImageText");
+
+    // ⭐ 매번 초기화
+    galleryImage.style.display = "block";
+    galleryImage.src = "";
+    noImageText.textContent = "";
+    noImageText.classList.add("hidden");
+
     images = [];
     currentIndex = 0;
 
@@ -1069,8 +1077,9 @@
 
     setTimeout(() => {
       if (images.length === 0) {
-        galleryImage.src = "";
-        galleryImage.alt = "이 날의 추억은 아직 없어요 🤍";
+        galleryImage.style.display = "none";
+        noImageText.textContent = "이 날의 추억은 아직 없어요 🤍";
+        noImageText.classList.remove("hidden");
       }
     }, 300);
 
