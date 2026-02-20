@@ -438,14 +438,14 @@
   .chat-input select,
   .chat-input input {
     flex: 1;
-    padding: 10px;
-    border-radius: 14px;
+    padding: 6px 10px;   /* 🔥 세로 padding 줄이기 */
+    border-radius: 14px; /* 둥근 느낌 유지 */
     border: 1px solid #ddd;
     font-size: 14px;
   }
 
   .chat-input button {
-    padding: 10px 16px;
+    padding: 6px 14px;   /* 🔥 세로만 줄임 */
     border-radius: 14px;
     border: none;
     background: #e5e5e5;
@@ -613,10 +613,6 @@
 
   body.night .gallery-close-btn:hover {
     background: transparent;
-  }
-
-  .chat-input input {
-    min-height: 40px;
   }
 
   @supports (-webkit-touch-callout: none) {
