@@ -674,9 +674,7 @@
       <button class="gallery-close-btn" onclick="closeGallery()">⨉</button>
     </div>
     <div id="galleryContent">
-      <button id="prevBtn">◀</button>
       <img id="galleryImage" src="" />
-      <button id="nextBtn">▶</button>
     </div>
   </div>
 
@@ -1063,23 +1061,30 @@
     galleryCard.classList.remove("hidden");
   }
 
-  // 버튼 이벤트
-  document.getElementById("prevBtn").onclick = function () {
-    if (images.length === 0) return;
-    currentIndex = (currentIndex - 1 + images.length) % images.length;
-    document.getElementById("galleryImage").src = images[currentIndex];
-  };
-
-  document.getElementById("nextBtn").onclick = function () {
-    if (images.length === 0) return;
-    currentIndex = (currentIndex + 1) % images.length;
-    document.getElementById("galleryImage").src = images[currentIndex];
-  };
-
   // 닫기 버튼
   function closeGallery() {
     document.getElementById("galleryCard").classList.add("hidden");
   }
+
+  const galleryImage = document.getElementById("galleryImage");
+
+  galleryImage.addEventListener("click", function (e) {
+    if (images.length === 0) return;
+
+    const rect = galleryImage.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const halfWidth = rect.width / 2;
+
+    if (clickX < halfWidth) {
+      // 왼쪽 클릭 → 이전
+      currentIndex = (currentIndex - 1 + images.length) % images.length;
+    } else {
+      // 오른쪽 클릭 → 다음
+      currentIndex = (currentIndex + 1) % images.length;
+    }
+
+    galleryImage.src = images[currentIndex];
+  });
 
   
 </script>
