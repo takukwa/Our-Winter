@@ -585,7 +585,7 @@
     height: auto;
     border-radius: 15px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-    margin-bottom: 20px;
+    margin-bottom: 25px;
   }
 
   /* 🖼 갤러리 닫기 X 버튼 */
@@ -626,7 +626,13 @@
     overscroll-behavior: none;
   }
 
+  #noImageText {
+    margin: 30px 0 20px;
+    font-size: 15px;
+    opacity: 0.6;
+  }
 
+ 
 </style>
 </head>
 
@@ -676,6 +682,7 @@
     </div>
     <div id="galleryContent">
       <img id="galleryImage" src="" />
+      <div id="noImageText" class="hidden"></div>
     </div>
   </div>
 
@@ -744,10 +751,18 @@
     buttons.style.display = "none";
 
     // 3️⃣ 3초 후 원래 상태로 복구
+    const noImageText = document.getElementById("noImageText");
+
     setTimeout(() => {
-      text.textContent = "눈은 언제까지나 내릴까?";
-      buttons.style.display = "flex"; // 다시 보이게
-    }, 3000);
+      if (images.length === 0) {
+        galleryImage.style.display = "none";
+        noImageText.textContent = "이 날의 추억은 아직 없어요 🤍";
+        noImageText.classList.remove("hidden");
+      } else {
+        galleryImage.style.display = "block";
+        noImageText.classList.add("hidden");
+      }
+    }, 300);
   }
 
   /* ===== D-Day ===== */
