@@ -576,9 +576,12 @@
   }
 
   #galleryContent {
-    margin-top: 20px;
-    text-align: center;
-  }
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
 
   #galleryContent img {
     max-width: 90%;
@@ -586,6 +589,7 @@
     border-radius: 15px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.15);
     margin-bottom: 23px;
+    display: block;
   }
 
   /* 🖼 갤러리 닫기 X 버튼 */
