@@ -435,17 +435,24 @@
     margin-top: 2px;   /* ⭐ 거의 붙이기 */
   }
 
-  .chat-input select,
+  .chat-input select {
+    flex: 0 0 90px;
+    padding: 8px 8px;
+    border-radius: 14px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+  }
+  
   .chat-input input {
     flex: 1;
-    padding: 6px 10px;   /* 🔥 세로 padding 줄이기 */
+    padding: 8px 12px;   /* 🔥 세로 padding 줄이기 */
     border-radius: 14px; /* 둥근 느낌 유지 */
     border: 1px solid #ddd;
     font-size: 14px;
   }
 
   .chat-input button {
-    padding: 6px 14px;   /* 🔥 세로만 줄임 */
+    padding: 8px 16px;   /* 🔥 세로만 줄임 */
     border-radius: 14px;
     border: none;
     background: #e5e5e5;
