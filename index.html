@@ -1035,56 +1035,90 @@
 
   const messagesDiv = document.getElementById("messages");
 
-  db.ref("messages").limitToLast(200).on("value", (snapshot) => {
-    messagesDiv.innerHTML = "";
+db.ref("messages").limitToLast(200).on("value", (snapshot) => {
+  messagesDiv.innerHTML = "";
 
-    let prevTimeText = "";   // 🔥 이전 메시지 시간 저장
-
-    snapshot.forEach((child) => {
-      const key = child.key;
-      const { user, text, time, read } = child.val();
-
-      const date = new Date(time);
-      const month = date.getMonth() + 1;
-      const day = date.getDate();
-      const hour = date.getHours().toString().padStart(2, "0");
-      const min = date.getMinutes().toString().padStart(2, "0");
-
-      const timeText = `${month}월 ${day}일 ${hour}:${min}`;
-
-      const msg = document.createElement("div");
-      const side = user === "서올" ? "left" : "right";
-      msg.className = `message ${side}`;
-
-      // 🔥 시간 다를 때만 표시
-      let timeHTML = "";
-      if (timeText !== prevTimeText) {
-        timeHTML = `<div class="time">${timeText}</div>`;
-        prevTimeText = timeText;
-      }
-
-      msg.innerHTML = `
-        <div class="name">${user}</div>
-        <div class="bubble">${text}</div>
-        ${timeHTML}
-      `;
-
-      msg.querySelector(".bubble").onclick = () => {
-        const ok = confirm("이 메시지를 삭제할까?");
-        if (ok) {
-          db.ref("messages/" + key).remove();
-        }
-      };
-
-      messagesDiv.appendChild(msg);
-
-      if (!read) {
-        db.ref("messages/" + key + "/read").set(true);
-      }
+  // 1) 먼저 배열로 모으기
+  const list = [];
+  snapshot.forEach((child) => {
+    list.push({
+      key: child.key,
+      ...child.val()
     });
-
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
   });
+
+  // 2) 순서대로 그리면서 앞/뒤 메시지 비교
+  for (let i = 0; i < list.length; i++) {
+    const msgData = list[i];
+    const prev    = list[i - 1];
+    const next    = list[i + 1];
+
+    const user = msgData.user;
+    const text = msgData.text;
+    const time = msgData.time;
+    const read = msgData.read;
+
+    const currTimeText = formatTime(time);
+    const prevTimeText = prev ? formatTime(prev.time) : null;
+    const nextTimeText = next ? formatTime(next.time) : null;
+
+    // 🔹 이름은 "새 유저가 시작되는 첫 메시지"에만 표시
+    const showName = !prev || prev.user !== user;
+
+    // 🔹 시간은 "같은 유저 + 같은 시간 묶음의 마지막 메시지"에만 표시
+    const isLastOfGroup =
+      !next ||                 // 마지막 메시지이거나
+      next.user !== user ||    // 다음 메시지의 유저가 바뀌었거나
+      nextTimeText !== currTimeText; // 다음 메시지 시간이 다르면 (분이 달라지면)
+
+    const nameHTML = showName
+      ? `<div class="name">${user}</div>`
+      : "";
+
+    const timeHTML = isLastOfGroup
+      ? `<div class="time">${currTimeText}</div>`
+      : "";
+
+    // 좌/우 정렬
+    const side = user === "서올" ? "left" : "right";
+    const msgEl = document.createElement("div");
+    msgEl.className = `message ${side}`;
+
+    msgEl.innerHTML = `
+      ${nameHTML}
+      <div class="bubble">${text}</div>
+      ${timeHTML}
+    `;
+
+    // 말풍선 클릭 → 삭제
+    const bubble = msgEl.querySelector(".bubble");
+    bubble.onclick = () => {
+      const ok = confirm("이 메시지를 삭제할까?");
+      if (ok) {
+        db.ref("messages/" + msgData.key).remove();
+      }
+    };
+
+    messagesDiv.appendChild(msgEl);
+
+    // 읽음 처리
+    if (!read) {
+      db.ref("messages/" + msgData.key + "/read").set(true);
+    }
+  }
+
+  // 스크롤 맨 아래로
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+});
+
+  function formatTime(ts) {
+    const date = new Date(ts);
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const hour = date.getHours().toString().padStart(2, "0");
+    const min = date.getMinutes().toString().padStart(2, "0");
+    return `${month}월 ${day}일 ${hour}:${min}`;
+  }
 
 
   // 날짜 클릭했을 때 실행
