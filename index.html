@@ -744,26 +744,14 @@
     const text = document.getElementById("introText");
     const buttons = document.getElementById("introButtons");
 
-    // 1️⃣ 문장 변경
     text.textContent = "눈은 결국 녹아버려.";
-
-    // 2️⃣ 버튼 숨기기
     buttons.style.display = "none";
 
-    // 3️⃣ 3초 후 원래 상태로 복구
-    const noImageText = document.getElementById("noImageText");
+    setTimeout(() => {
+      text.textContent = "눈은 언제까지나 내릴까?";
+      buttons.style.display = "flex";
+    }, 3000);
   }
-
-  setTimeout(() => {
-    if (images.length === 0) {
-      galleryImage.style.display = "none";
-      noImageText.textContent = "이 날의 추억은 아직 없어요 🤍";
-      noImageText.classList.remove("hidden");
-    } else {
-      galleryImage.style.display = "block";
-      noImageText.classList.add("hidden");
-    }
-  }, 300);
   
   /* ===== D-Day ===== */
   function updateDday() {
