@@ -547,11 +547,10 @@
   }
   
   /* ⭐ 인트로 화면에서는 테마 버튼 항상 낮모드 */
-  #:not(.hidden) ~ #themeBtn {
+  body:not(.entered) #themeBtn {
     background: #e5e5e5;
     color: #333;
   }
-
   /* 🔹 채팅 스크롤바 숨기기 (스크롤은 유지) */
   #messages {
     scrollbar-width: none;        /* Firefox */
@@ -728,8 +727,8 @@ body:not(.entered) {
 <!-- 배경음악 -->
 <audio id="bgm" src="bgm.mp3" loop></audio>
 
-<div id="" class="center">
-  <h1 id="Text">눈은 언제까지나 내릴까?</h1>
+<div id="intro" class="center">
+  <h1 id="introText">눈은 언제까지나 내릴까?</h1>
   <div class="button-row" id="introButtons">
     <button onclick="startSequence()">Yes</button>
     <button onclick="showNo()">No</button>
