@@ -310,7 +310,7 @@
   }
 
   /* 1️⃣ 인트로 버튼은 밤모드 영향 받지 않게 */
-  body.night # button {
+  body.night #intro button {
     background: #ddd;
     color: #000;
   }
@@ -704,6 +704,15 @@ body:not(.entered) {
   line-height: 1.6;
   color: #000;
 }
+
+#homeWrapper {
+  position: relative;
+  z-index: 1;
+}
+
+.home-fade-in {
+  animation: fadeIn 1.2s forwards;
+}
   
 </style>
 </head>
@@ -736,64 +745,65 @@ body:not(.entered) {
 </div>
 
 <!-- ===== 상단 영역 ===== -->
-<div id="top-area" class="hidden">
-  <h2>Our Winter ❄️</h2>
-
-  <div class="button-row">
-   <button class="profile-btn" onclick="openProfile('b')">하현우</button>
-    <span style="font-size:18px;">🩵</span>
-    <button class="profile-btn" onclick="openProfile('a')">한서올</button>
-  </div>
-  <div class="dday" id="ddayBox"></div>
-</div>
-
-<button id="themeBtn" onclick="toggleTheme()">🌙</button>
-
-<!-- ===== 메인 레이아웃 ===== -->
-<div id="main-layout" class="hidden">
-  <!-- 📅 캘린더 카드 -->
-  <div class="calendar-card">
-    <div class="calendar-header">
-      <button onclick="moveMonth(-1)">&lt;</button>
-      <strong id="monthTitle"></strong>
-      <button onclick="moveMonth(1)">&gt;</button>
-    </div>
-    <div class="days" id="calendar"></div>
-  </div>
-  
-  <!-- 🖼 갤러리 카드 -->
-  <div class="anniversary-card hidden" id="galleryCard">
-    <div class="gallery-header">
-      <h3 id="galleryTitle">Gallery</h3>
-      <button class="gallery-close-btn" onclick="closeGallery()">⨉</button>
-    </div>
-    <div id="galleryContent">
-      <img id="galleryImage" src="" />
-      <div id="noImageText" class="hidden"></div>
-    </div>
-  </div>
-
-  <!-- 💬 채팅 카드 -->
-  <div id="chat">
-    <div id="messages"></div>
+  <div id="homeWrapper" class="hidden">
+    <div id="top-area">
+      <h2>Our Winter ❄️</h2>
     
-    <div class="chat-input">
-      <select id="sender">
-        <option value="서올">서올</option>
-        <option value="현우">현우</option>
-      </select>
+      <div class="button-row">
+       <button class="profile-btn" onclick="openProfile('b')">하현우</button>
+        <span style="font-size:18px;">🩵</span>
+        <button class="profile-btn" onclick="openProfile('a')">한서올</button>
+      </div>
+      <div class="dday" id="ddayBox"></div>
+    </div>
+
+    <button id="themeBtn" onclick="toggleTheme()">🌙</button>
+
+    <!-- ===== 메인 레이아웃 ===== -->
+    <div id="main-layout">
+      <!-- 📅 캘린더 카드 -->
+      <div class="calendar-card">
+        <div class="calendar-header">
+          <button onclick="moveMonth(-1)">&lt;</button>
+          <strong id="monthTitle"></strong>
+          <button onclick="moveMonth(1)">&gt;</button>
+        </div>
+        <div class="days" id="calendar"></div>
+      </div>
       
-      <input
-        id="messageInput"
-        placeholder="메시지를 입력해주세요"
-        onkeydown="if(event.key==='Enter') sendMessage()"
-      />
-      
-      <button onclick="sendMessage()">❄️</button>
+      <!-- 🖼 갤러리 카드 -->
+      <div class="anniversary-card hidden" id="galleryCard">
+        <div class="gallery-header">
+          <h3 id="galleryTitle">Gallery</h3>
+          <button class="gallery-close-btn" onclick="closeGallery()">⨉</button>
+        </div>
+        <div id="galleryContent">
+          <img id="galleryImage" src="" />
+          <div id="noImageText" class="hidden"></div>
+        </div>
+      </div>
+    
+      <!-- 💬 채팅 카드 -->
+      <div id="chat">
+        <div id="messages"></div>
+        
+        <div class="chat-input">
+          <select id="sender">
+            <option value="서올">서올</option>
+            <option value="현우">현우</option>
+          </select>
+          
+          <input
+            id="messageInput"
+            placeholder="메시지를 입력해주세요"
+            onkeydown="if(event.key==='Enter') sendMessage()"
+          />
+          
+          <button onclick="sendMessage()">❄️</button>
+        </div>
+      </div>
     </div>
   </div>
-
-</div>
   
 <div id="profileModal" class="profile-modal hidden" onclick="closeProfile()">
   <div class="profile-box" onclick="event.stopPropagation()">
@@ -831,6 +841,9 @@ function startSequence() {
     sequence.classList.remove("hidden");
     sequence.classList.add("fade-in");
 
+    setTimeout(() => {
+      voice.play();
+    }, 400);
     // 3️⃣ 음성 재생 (Yes 클릭 → 사용자 제스처 OK)
     voice.play().catch(err => {
       console.log("음성 재생 실패:", err);
@@ -859,18 +872,24 @@ function startSequence() {
 }
   
   function enterHome() {
-    document.getElementById("intro").classList.add("hidden");
     document.body.classList.add("entered");
-    document.getElementById("top-area").classList.remove("hidden");
-    document.getElementById("main-layout").classList.remove("hidden");
-
-    // ⭐ 순서 중요
+  
+    const wrapper = document.getElementById("homeWrapper");
+    const top = document.getElementById("top-area");
+    const main = document.getElementById("main-layout");
+  
+    wrapper.classList.remove("hidden");   // ⭐ 핵심
+    top.classList.remove("hidden");
+    main.classList.remove("hidden");
+  
+    top.classList.add("home-fade-in");
+    main.classList.add("home-fade-in");
+  
     updateDday();
-
-    current = new Date();   // ← 현재 달 강제 초기화
-    renderCalendar();       // ← 무조건 한 번 그리기
+    current = new Date();
+    renderCalendar();
   }
-
+  
   function showNo() {
     const text = document.getElementById("introText");
     const buttons = document.getElementById("introButtons");
