@@ -713,11 +713,31 @@ body:not(.entered) {
 .home-fade-in {
   animation: fadeIn 1.2s forwards;
 }
+
+/* 인트로 & 연출 전용 배경 */
+#intro-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #f4f4f6;   /* 낮 배경 고정 */
+  z-index: 9;
+  opacity: 1;
+  transition: opacity 1.5s;
+}
+
+/* 홈 진입 후 배경 제거 */
+body.entered #intro-bg {
+  opacity: 0;
+  pointer-events: none;
+}
   
 </style>
 </head>
 
 <body>
+<div id="intro-bg"></div>
 <canvas id="snow"></canvas>
 
 <!-- ===== 인트로 ===== -->
