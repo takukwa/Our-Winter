@@ -310,7 +310,7 @@
   }
 
   /* 1️⃣ 인트로 버튼은 밤모드 영향 받지 않게 */
-  body.night #intro button {
+  body.night # button {
     background: #ddd;
     color: #000;
   }
@@ -547,7 +547,7 @@
   }
   
   /* ⭐ 인트로 화면에서는 테마 버튼 항상 낮모드 */
-  #intro:not(.hidden) ~ #themeBtn {
+  #:not(.hidden) ~ #themeBtn {
     background: #e5e5e5;
     color: #333;
   }
@@ -680,6 +680,31 @@ body:not(.entered) {
   overflow: hidden;
 }
 
+/* ===== 페이드 애니메이션 ===== */
+.fade-in {
+  animation: fadeIn 1.5s forwards;
+}
+
+.fade-out {
+  animation: fadeOut 1.5s forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* 중간 연출 문구 스타일 */
+#sequenceText {
+  font-size: 28px;
+  line-height: 1.6;
+  color: #000;
+}
   
 </style>
 </head>
@@ -688,10 +713,25 @@ body:not(.entered) {
 <canvas id="snow"></canvas>
 
 <!-- ===== 인트로 ===== -->
-<div id="intro" class="center">
-  <h1 id="introText">눈은 언제까지나 내릴까?</h1>
+
+<!-- ===== 중간 연출 ===== -->
+<div id="sequence" class="center hidden">
+  <h1 id="sequenceText">
+    #내가감히_너를<br>
+    #네가부디_나를
+  </h1>
+</div>
+
+<!-- 음성 -->
+<audio id="voice" src="voice1.mp3"></audio>
+
+<!-- 배경음악 -->
+<audio id="bgm" src="bgm.mp3" loop></audio>
+
+<div id="" class="center">
+  <h1 id="Text">눈은 언제까지나 내릴까?</h1>
   <div class="button-row" id="introButtons">
-    <button onclick="enterHome()">Yes</button>
+    <button onclick="startSequence()">Yes</button>
     <button onclick="showNo()">No</button>
   </div>
 </div>
@@ -775,6 +815,50 @@ body:not(.entered) {
   let current = new Date();
 
   /* ===== 인트로 ===== */
+/* ===== 인트로 → 중간 연출 → 홈 시퀀스 ===== */
+function startSequence() {
+  const intro = document.getElementById("intro");
+  const sequence = document.getElementById("sequence");
+  const voice = document.getElementById("voice");
+  const bgm = document.getElementById("bgm");
+
+  // 1️⃣ 인트로 페이드 아웃
+  intro.classList.add("fade-out");
+
+  setTimeout(() => {
+    intro.classList.add("hidden");
+
+    // 2️⃣ 중간 연출 등장
+    sequence.classList.remove("hidden");
+    sequence.classList.add("fade-in");
+
+    // 3️⃣ 음성 재생 (Yes 클릭 → 사용자 제스처 OK)
+    voice.play().catch(err => {
+      console.log("음성 재생 실패:", err);
+    });
+
+    // 4️⃣ 음성이 끝나면 다음 단계
+    voice.onended = () => {
+      sequence.classList.remove("fade-in");
+      sequence.classList.add("fade-out");
+
+      setTimeout(() => {
+        sequence.classList.add("hidden");
+
+        // 5️⃣ 홈 진입
+        enterHome();
+
+        // 6️⃣ 배경음악 재생
+        bgm.play().catch(err => {
+          console.log("BGM 재생 실패:", err);
+        });
+
+      }, 1500); // 페이드아웃 시간
+    };
+
+  }, 1500); // 인트로 페이드아웃 시간
+}
+  
   function enterHome() {
     document.getElementById("intro").classList.add("hidden");
     document.body.classList.add("entered");
